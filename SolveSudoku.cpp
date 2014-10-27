@@ -301,7 +301,7 @@ private:
     /// use shared_ptr to strore agenda so that keep efficiency and prevent memory leakage
     std::deque<std::shared_ptr<Slot>> agenda_;
     std::stack<std::shared_ptr<Slot>> chart_;
-    std::vector<std::shared_ptr<Slot>> solution;
+    std::vector<std::shared_ptr<Slot>> solution_;
     
     std::vector<std::vector<int>> sudokuTable_;
     
@@ -378,7 +378,7 @@ bool SudokuSolver::solve() {
             // if agenda is empty, store solution, assuming only one solution
             if(agenda_.empty()) {
                 while( !chart_.empty()) {
-                    solution.push_back(chart_.top());
+                    solution_.push_back(chart_.top());
                     chart_.pop();
                 }
                 return true;
@@ -434,6 +434,12 @@ bool SudokuSolver::readFromFile(std::string fileName) {
 }
 
 void SudokuSolver::init()   {
+    agenda_.clear();
+    while(!chart_.empty())
+        chart_.pop();
+    
+    solution_.clear();
+    
     for(int y = 0; y < 9; y++)  {
         for(int x = 0; x < 9; x++)  {
             if( sudokuTable_[y][x] == 0)    {
@@ -477,7 +483,18 @@ void SudokuSolver::processAgenda()    {
 int main(int argc, const char * argv[]) {
     // insert code here...
     SudokuSolver sudokuSolver(SudokuSolver::Astar);
+    
     std::string filePath = "/Users/meigao/Documents/Projects/Sudoku/3.txt";
+    
+    /* simple use
+     sudokuSolver.readFromFile(filePath);
+     // print before solve
+     sudokuSolver.print();
+     sudokuSolver.solve();
+     // print after solved
+     sudokuSolver.print();
+     */
+    
     if(!sudokuSolver.readFromFile(filePath))    {
         std::cout << "File read error!!" << std::endl;
         return 0;
@@ -495,5 +512,6 @@ int main(int argc, const char * argv[]) {
         std::cout << "Total time used is " << ((float)t)/CLOCKS_PER_SEC << "seconds" << std::endl;
         std::cout << "No Solution." << std::endl;
     }
+    
     return 1;
 }
