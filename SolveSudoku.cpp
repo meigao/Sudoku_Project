@@ -7,25 +7,8 @@
 //
 
 // The input file is stored in a txt file, the suduku table is stored as a 81(9*9) length string in column major.
-// each grid is defined as a slot, '.' represents the slot is empty, otherwise it should be from '1' to '9'
-// for example, if a puzzle is as follows,
-/*
-1 3 . |. . 5 |4 . .
-. . . |. . 8 |. . .
-. . . |. . . |. 2 .
-------+------+------
-. . 6 |. 3 . |. . .
-2 . 3 |7 . . |. . .
-. . 8 |. . . |. . .
-------+------+------
-. 8 . |. 5 . |. . .
-. . 4 |. . . |. . 3
-. . . |. . . |5 . .
- */
+// each grid is defined as a slot, '0' represents the slot is empty, otherwise it should be from '1' to '9'
 
-// The input file is,
-
-//13...54.......8..........2...6.3....2.37.......8.......8..5......4.....3......5..
 
 #include <iostream>
 #include <fstream>
@@ -35,6 +18,7 @@
 #include <memory>
 #include <unordered_map>
 #include <time.h>
+#include <sstream>
 
 // class Slot to store solution of one slot at (x_, y_)
 class Slot  {
@@ -422,24 +406,28 @@ bool SudokuSolver::readFromFile(std::string fileName) {
         return false;
     std::string input;
     
-    myFile >> input;
-    if( input.length() != 81)
-        return false;
-    
-    int r = 0;
-    int c = 0;
-    for(auto e:input)   {
-        if( e == '.')
-            sudokuTable_[r][c++] = 0;
-        else if( e <='0' || e > '9')
+    for(int i = 0; i < 9; i++)  {
+        if(!getline(myFile, input))
             return false;
-        else
-            sudokuTable_[r][c++] = e - '0';
         
-        c %= 9;
-        if(c == 0)
-            r++;
+        std::istringstream ss( input );
+        for(int j = 0; j < 9; j++)  {
+            std::string s;
+            if (!getline( ss, s, ',' ))
+                return false;
+            
+            if(s.length()!= 1 || s[0] <'0' || s[0] > '9')
+                return false;
+            
+            if(s[0] == 0)
+                sudokuTable_[i][j] = 0;
+            else
+                sudokuTable_[i][j] = s[0] - '0';
+            
+        }
+        
     }
+    
     // initialize slot structure and agenda
     init();
     return true;
@@ -461,10 +449,8 @@ void SudokuSolver::print()  {
     std::cout << std::endl;
     for(int r = 0; r < 9; r++)  {
         for(int c = 0; c < 9; c++)  {
-            if (sudokuTable_[r][c] == 0)
-                std::cout << ". ";
-            else
-                std::cout << sudokuTable_[r][c] << ' ';
+
+            std::cout << sudokuTable_[r][c] << ' ';
             if(c == 2 || c == 5)
                 std::cout << '|';
         }
